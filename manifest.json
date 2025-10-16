@@ -1,0 +1,8 @@
+{
+    "display_name": "自动导出角色卡",
+    "loading_order": 1,
+    "js": "index.js",
+    "author": "Gemini AI",
+    "version": "1.0.0",
+    "description": "每次加载新角色时，自动导出角色卡为 JSON 文件。"
+}
