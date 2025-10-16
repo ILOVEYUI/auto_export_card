@@ -1,8 +1,12 @@
 {
-    "display_name": "自动导出角色卡",
+    "display_name": "角色卡导出工具",
     "loading_order": 1,
     "js": "index.js",
+    "html": "settings.html", // 指向设置 UI 的 HTML 文件
     "author": "Gemini AI",
-    "version": "1.0.0",
-    "description": "每次加载新角色时，自动导出角色卡为 JSON 文件。"
+    "version": "1.2.0",
+    "description": "在扩展设置中添加一个按钮，用于导出当前角色卡。",
+    "extension": {
+        "type": "ui"
+    }
 }
