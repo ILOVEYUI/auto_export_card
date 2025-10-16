@@ -2,7 +2,7 @@
  * SillyTavern 角色卡导出工具扩展
  * 在扩展设置面板中添加一个按钮，用于导出当前角色的 JSON 数据。
  */
-import { getContext } from '../../extensions.js';
+// 移除导入语句，直接依赖全局的 window.SillyTavern.getContext()
 
 window.SillyTavern.registerExtension({
     // 扩展的内部名称
@@ -20,9 +20,6 @@ window.SillyTavern.registerExtension({
      * @returns {string} HTML 字符串
      */
     settings: function () {
-        // 创建一个按钮，并绑定一个点击事件（使用内联 onclick 调用全局函数）
-        // 注意：为避免污染全局命名空间，我们应该将函数绑定到事件监听器，
-        // 但为了简化，这里使用 window.SillyTavern.extension_api.[extension_name].exportCurrentCard
         const html = `
             <div class="extension-settings-block">
                 <div class="inline-label">
@@ -52,7 +49,7 @@ window.SillyTavern.registerExtension({
     onSettingsLoaded: function () {
         const button = document.getElementById('export-char-card-button');
         if (button) {
-            button.addEventListener('click', exportCurrentCharacterCard);
+            button。addEventListener('click'， exportCurrentCharacterCard);
         }
     }
 });
@@ -61,12 +58,15 @@ window.SillyTavern.registerExtension({
  * 负责获取当前角色并将其导出为 JSON 文件
  */
 function exportCurrentCharacterCard() {
-    // 确保有 getContext 函数可用
-    const context = getContext ? getContext() : window.SillyTavern.getContext();
+    // *** 关键修正：使用全局变量获取 Context ***
+    const context = window.SillyTavern.getContext();
     
     // 检查当前是否有角色加载
-    if (!context.current_character) {
-        toastr.warning('当前没有加载任何角色。', '导出失败');
+    if (!context || !context.current_character) {
+        // 使用 SillyTavern 的 toastr 弹窗提示
+        if (typeof toastr !== 'undefined') {
+            toastr.warning('当前没有加载任何角色。', '导出失败');
+        }
         console.warn('导出失败：context.current_character 为空。');
         return;
     }
@@ -92,18 +92,22 @@ function exportCurrentCharacterCard() {
         a.download = fileName; // 设置下载的文件名
         
         // 4. 触发下载
-        // 延迟执行可以提高下载成功率，避免被某些浏览器优化阻止
         setTimeout(() => {
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            toastr.success(`角色卡已导出为: ${fileName}`, '导出成功');
+            
+            if (typeof toastr !== 'undefined') {
+                toastr.success(`角色卡已导出为: ${fileName}`, '导出成功');
+            }
             console.log(`角色卡已成功导出为: ${fileName}`);
         }, 100); 
 
     } catch (error) {
-        toastr.error(`导出角色卡时发生错误: ${error.message}`, '导出失败');
+        if (typeof toastr !== 'undefined') {
+            toastr.error(`导出角色卡时发生错误: ${error.message}`, '导出失败');
+        }
         console.error('导出角色卡时发生错误:', error);
     }
 }
