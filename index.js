@@ -1,8 +1,9 @@
 /**
  * SillyTavern 角色卡导出工具扩展
- * 在扩展设置面板中添加一个按钮，用于导出当前角色的 JSON 数据。
+ * 核心逻辑：获取当前角色数据并触发下载。
  */
-// 移除导入语句，直接依赖全局的 window.SillyTavern.getContext()
+
+// 移除 settings() 函数，因为 HTML 现在在 settings.html 中定义。
 
 window.SillyTavern.registerExtension({
     // 扩展的内部名称
@@ -15,41 +16,20 @@ window.SillyTavern.registerExtension({
         console.log('角色卡导出工具扩展已加载！');
     },
 
-    /**
-     * 添加扩展设置面板的 HTML 结构
-     * @returns {string} HTML 字符串
-     */
-    settings: function () {
-        const html = `
-            <div class="extension-settings-block">
-                <div class="inline-label">
-                    <span>当前角色卡导出</span>
-                </div>
-                <div class="inline-block">
-                    <button 
-                        id="export-char-card-button" 
-                        class="menu_button" 
-                        title="导出当前正在聊天的角色卡为 JSON 文件"
-                    >
-                        下载当前角色卡 (.json)
-                    </button>
-                </div>
-                <div class="info_block">
-                    点击按钮导出当前角色（如角色定义、世界信息等）的 JSON 文件。
-                </div>
-            </div>
-        `;
-        return html;
-    },
+    // settings: function () { /* 此函数被移除，由 settings.html 代替 */ },
 
     /**
      * 设置面板渲染完成后的回调函数
      * 在这里绑定按钮的点击事件
+     * 注意：这个函数会在 settings.html 的内容加载后立即执行
      */
     onSettingsLoaded: function () {
         const button = document.getElementById('export-char-card-button');
         if (button) {
-            button。addEventListener('click'， exportCurrentCharacterCard);
+            button.addEventListener('click', exportCurrentCharacterCard);
+            console.log('角色卡导出按钮已绑定事件。');
+        } else {
+            console.error('未找到 ID 为 "export-char-card-button" 的按钮。请检查 settings.html 文件。');
         }
     }
 });
@@ -58,12 +38,11 @@ window.SillyTavern.registerExtension({
  * 负责获取当前角色并将其导出为 JSON 文件
  */
 function exportCurrentCharacterCard() {
-    // *** 关键修正：使用全局变量获取 Context ***
+    // 使用全局变量获取 Context
     const context = window.SillyTavern.getContext();
     
     // 检查当前是否有角色加载
     if (!context || !context.current_character) {
-        // 使用 SillyTavern 的 toastr 弹窗提示
         if (typeof toastr !== 'undefined') {
             toastr.warning('当前没有加载任何角色。', '导出失败');
         }
@@ -79,7 +58,6 @@ function exportCurrentCharacterCard() {
 
         // 2. 生成文件名
         const date = new Date().toISOString().slice(0, 10);
-        // 替换掉文件名中不允许的字符
         const safeName = character.name.replace(/[\\/:*?"<>|]/g, '_'); 
         const fileName = `${safeName}_${date}.json`;
         
@@ -89,7 +67,7 @@ function exportCurrentCharacterCard() {
 
         const a = document.createElement('a');
         a.href = url;
-        a.download = fileName; // 设置下载的文件名
+        a.download = fileName; 
         
         // 4. 触发下载
         setTimeout(() => {
